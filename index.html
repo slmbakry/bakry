@@ -26,7 +26,6 @@
         <span aria-hidden="true">⌕</span>
         <input id="q" type="search" placeholder="ابحث عن أداة..." autocomplete="off">
       </label>
-      <div class="chips" id="chips"></div>
     </div>
 
     <section class="grid" id="grid">
@@ -43,41 +42,31 @@
     const { sb, esc, header, footer } = MBM;
     header("home"); footer();
 
-    let tools = [], category = "الكل";
+    let tools = [];
     const grid = document.getElementById("grid");
-    const chips = document.getElementById("chips");
     const q = document.getElementById("q");
 
     function render() {
       const term = q.value.trim().toLowerCase();
       const list = tools.filter((t) =>
-        (category === "الكل" || t.category === category) &&
-        (!term || [t.name, t.tagline, t.description, t.category].join(" ").toLowerCase().includes(term)));
+        (!term || [t.name, t.tagline, t.description].join(" ").toLowerCase().includes(term)));
       grid.innerHTML = list.length ? list.map((t) => `
         <a class="card" href="tool.html?t=${encodeURIComponent(t.slug)}">
           <div class="card-icon">${esc(t.icon)}</div>
           <h3>${esc(t.name)}</h3>
           <p>${esc(t.tagline)}</p>
-          <div class="meta"><span class="tag">${esc(t.category)}</span><span>${t.hub_entries?.[0]?.count ?? 0} موضوع</span></div>
+          <div class="meta"><span>${t.hub_entries?.[0]?.count ?? 0} موضوع</span><span class="tag">افتح الشرح</span></div>
         </a>`).join("") : `<div class="empty">لا توجد أدوات مطابقة</div>`;
     }
 
-    function renderChips() {
-      const cats = ["الكل", ...new Set(tools.map((t) => t.category))];
-      chips.innerHTML = cats.map((c) => `<button class="chip ${c === category ? "active" : ""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
-    }
-    chips.addEventListener("click", (e) => {
-      const b = e.target.closest(".chip"); if (!b) return;
-      category = b.dataset.c; renderChips(); render();
-    });
     q.addEventListener("input", render);
 
     (async () => {
       const { data, error } = await sb.from("hub_tools")
-        .select("slug,name,tagline,description,category,icon,sort_order,hub_entries(count)")
+        .select("slug,name,tagline,description,icon,sort_order,hub_entries(count)")
         .eq("published", true).order("sort_order").order("name");
       if (error) { grid.innerHTML = `<div class="empty">تعذر تحميل الأدوات، حاول مرة أخرى</div>`; return; }
-      tools = data; renderChips(); render();
+      tools = data; render();
     })();
   </script>
 </body>

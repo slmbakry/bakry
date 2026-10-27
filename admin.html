@@ -45,10 +45,7 @@
         <div class="panel" id="tool-panel">
           <div class="section-title"><h2 id="tool-title">أداة جديدة</h2><a class="btn btn-sm hidden" id="view-link" target="_blank">عرض الصفحة</a></div>
           <form id="tool-form">
-            <div class="row">
-              <div class="field"><label>اسم الأداة</label><input name="name" required></div>
-              <div class="field"><label>التصنيف</label><input name="category" list="cats" required><datalist id="cats"></datalist></div>
-            </div>
+            <div class="field"><label>اسم الأداة</label><input name="name" required></div>
             <div class="field"><label>وصف مختصر</label><input name="tagline"></div>
             <div class="field"><label>شرح الأداة</label><textarea name="description" style="min-height:90px"></textarea></div>
             <div class="field"><label>رابط الأداة</label><input name="url" type="url" class="ltr" placeholder="https://"></div>
@@ -153,7 +150,6 @@
         <button class="tool-item ${current?.id === t.id ? "active" : ""}" data-id="${t.id}">
           <span>${esc(t.icon)}</span><span>${esc(t.name)}</span>${t.published ? "" : `<span class="draft">مسودة</span>`}
         </button>`).join("") || `<div class="empty" style="padding:16px">لا توجد أدوات</div>`;
-      $("cats").innerHTML = [...new Set(tools.map((t) => t.category))].map((c) => `<option value="${esc(c)}">`).join("");
     }
     $("tool-list").addEventListener("click", (e) => {
       const b = e.target.closest(".tool-item"); if (b) selectTool(b.dataset.id);
@@ -161,7 +157,7 @@
 
     function fillToolForm(t) {
       const f = $("tool-form");
-      f.name.value = t?.name ?? ""; f.category.value = t?.category ?? "";
+      f.name.value = t?.name ?? "";
       f.tagline.value = t?.tagline ?? ""; f.description.value = t?.description ?? "";
       f.url.value = t?.url ?? ""; f.slug.value = t?.slug ?? "";
       f.icon.value = t?.icon ?? "🧰"; f.sort_order.value = t?.sort_order ?? 0;
@@ -193,7 +189,7 @@
       e.preventDefault();
       const f = e.target;
       const row = {
-        name: f.name.value.trim(), category: f.category.value.trim(), tagline: f.tagline.value.trim(),
+        name: f.name.value.trim(), tagline: f.tagline.value.trim(),
         description: f.description.value.trim(), url: f.url.value.trim(), slug: f.slug.value.trim().toLowerCase(),
         icon: f.icon.value.trim() || "🧰", sort_order: Number(f.sort_order.value) || 0, published: f.published.checked,
       };
