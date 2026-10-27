@@ -13,7 +13,8 @@
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  // Tiny, safe formatter: escapes first, then supports lists, **bold** and links.
+  // Tiny, safe formatter: escapes first, then supports lists, **bold**, links,
+  // and `code` lines (shown as a left-to-right box, kept inside the list item above).
   function format(text) {
     const inline = (s) =>
       esc(s)
@@ -24,9 +25,15 @@
     const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
     for (const raw of String(text ?? "").split(/\r?\n/)) {
       const line = raw.trim();
+      const code = line.match(/^`(.+)`$/);
       const ul = line.match(/^[-•*]\s+(.*)/);
       const ol = line.match(/^\d+[.)]\s+(.*)/);
-      if (ul || ol) {
+      if (code) {
+        const box = `<code class="code-line" dir="ltr">${esc(code[1])}</code>`;
+        const last = out.length - 1;
+        if (list && out[last].endsWith("</li>")) out[last] = out[last].slice(0, -5) + box + "</li>";
+        else out.push(box);
+      } else if (ul || ol) {
         const tag = ul ? "ul" : "ol";
         if (list !== tag) { close(); out.push(`<${tag}>`); list = tag; }
         out.push(`<li>${inline((ul || ol)[1])}</li>`);

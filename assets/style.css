@@ -214,3 +214,8 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
 .skeleton { background: linear-gradient(90deg, var(--surface-2), var(--surface), var(--surface-2)); background-size: 200% 100%; animation: sk 1.2s infinite; border-radius: var(--radius); min-height: 160px; }
 @keyframes sk { to { background-position: -200% 0; } }
 .hidden { display: none !important; }
+.code-line {
+  display: block; direction: ltr; text-align: left; margin: 6px 0 4px;
+  font-family: ui-monospace, Consolas, monospace; font-size: 14px; color: var(--ink);
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px;
+}
