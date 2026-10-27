@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MBM | لوحة التحكم</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%230f1b2d'/><text x='32' y='40' font-size='20' font-family='Arial' font-weight='bold' fill='%23b8924a' text-anchor='middle'>MBM</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main class="wrap">
+    <!-- Login -->
+    <section id="auth" class="panel auth-box hidden">
+      <h2 style="margin-top:0">تسجيل الدخول</h2>
+      <p style="color:var(--muted);margin-top:0">لوحة التحكم مخصصة لمدير الموقع فقط</p>
+      <form id="login-form">
+        <div class="field"><label>البريد الإلكتروني</label><input id="email" type="email" class="ltr" required></div>
+        <div class="field"><label>كلمة المرور</label><input id="password" type="password" class="ltr"><span class="hint">اتركها فارغة لو عايز رابط دخول على بريدك</span></div>
+        <button class="btn btn-primary" style="width:100%" type="submit">دخول</button>
+      </form>
+    </section>
+
+    <section id="denied" class="panel auth-box hidden">
+      <h2 style="margin-top:0">غير مصرح</h2>
+      <p style="color:var(--muted)">هذا الحساب ليس له صلاحية التعديل</p>
+      <button class="btn" id="logout-2">تسجيل الخروج</button>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dash" class="admin-layout hidden">
+      <aside class="panel">
+        <div class="section-title"><h3>الأدوات</h3><button class="btn btn-gold btn-sm" id="new-tool">+ أداة</button></div>
+        <div class="tool-list" id="tool-list"></div>
+        <hr class="sep">
+        <button class="btn btn-sm" id="logout" style="width:100%">تسجيل الخروج</button>
+      </aside>
+
+      <div>
+        <div class="panel" id="tool-panel">
+          <div class="section-title"><h2 id="tool-title">أداة جديدة</h2><a class="btn btn-sm hidden" id="view-link" target="_blank">عرض الصفحة</a></div>
+          <form id="tool-form">
+            <div class="row">
+              <div class="field"><label>اسم الأداة</label><input name="name" required></div>
+              <div class="field"><label>التصنيف</label><input name="category" list="cats" required><datalist id="cats"></datalist></div>
+            </div>
+            <div class="field"><label>وصف مختصر</label><input name="tagline"></div>
+            <div class="field"><label>شرح الأداة</label><textarea name="description" style="min-height:90px"></textarea></div>
+            <div class="field"><label>رابط الأداة</label><input name="url" type="url" class="ltr" placeholder="https://"></div>
+            <div class="row">
+              <div class="field"><label>معرّف الرابط</label><input name="slug" class="ltr" required pattern="[a-z0-9-]+"><span class="hint">حروف إنجليزية صغيرة وأرقام وشرطة فقط</span></div>
+              <div class="field"><label>أيقونة</label><input name="icon" maxlength="4"></div>
+            </div>
+            <div class="row">
+              <div class="field"><label>الترتيب</label><input name="sort_order" type="number" value="0"></div>
+              <div class="field" style="justify-content:flex-end"><label class="check"><input type="checkbox" name="published" checked> منشورة للزوار</label></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary" type="submit">حفظ الأداة</button>
+              <button class="btn btn-danger hidden" type="button" id="delete-tool">حذف الأداة</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel hidden" id="entries-panel" style="margin-top:20px">
+          <div class="section-title"><h2>المحتوى</h2><button class="btn btn-gold btn-sm" id="new-entry">+ إضافة محتوى</button></div>
+          <div id="entry-list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="entry-dialog">
+    <form id="entry-form" method="dialog">
+      <h3 style="margin-top:0" id="entry-dialog-title">محتوى جديد</h3>
+      <div class="row">
+        <div class="field"><label>النوع</label>
+          <select name="kind">
+            <option value="instruction">تعليمات</option>
+            <option value="experiment">ملخص تجربة</option>
+            <option value="tip">نصيحة</option>
+          </select>
+        </div>
+        <div class="field"><label>التاريخ</label><input name="entry_date" type="date" required></div>
+      </div>
+      <div class="field"><label>العنوان</label><input name="title" required></div>
+      <div class="field"><label>المحتوى</label><textarea name="body" style="min-height:200px"></textarea>
+        <span class="hint">ابدأ السطر بشرطة لعمل قائمة، أو برقم ونقطة لقائمة مرقمة، وضع النص بين نجمتين مزدوجتين لجعله عريض</span></div>
+      <div class="field"><label>الترتيب</label><input name="sort_order" type="number" value="0"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" type="button" id="entry-cancel">إلغاء</button>
+        <button class="btn btn-primary" type="submit" value="save">حفظ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    const { sb, KINDS, esc, fmtDate, header, toast } = MBM;
+    header();
+    const $ = (id) => document.getElementById(id);
+    const show = (id) => ["auth", "denied", "dash"].forEach((s) => $(s).classList.toggle("hidden", s !== id));
+
+    let tools = [], current = null, entries = [], editingEntry = null;
+
+    // ---------- Auth ----------
+    $("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = $("email").value.trim(), password = $("password").value;
+      if (password) {
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) return toast("بيانات الدخول غير صحيحة", true);
+      } else {
+        const redirect = location.href.split("#")[0].split("?")[0];
+        const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect, shouldCreateUser: false } });
+        if (error) return toast("تعذر إرسال الرابط", true);
+        toast("تم إرسال رابط الدخول إلى بريدك");
+      }
+    });
+    const logout = async () => { await sb.auth.signOut(); show("auth"); };
+    $("logout").addEventListener("click", logout);
+    $("logout-2").addEventListener("click", logout);
+
+    async function boot(session) {
+      if (!session) return show("auth");
+      const { data: ok } = await sb.rpc("hub_is_admin");
+      if (!ok) return show("denied");
+      show("dash");
+      await loadTools();
+      if (!current && tools[0]) selectTool(tools[0].id);
+      else if (!current) newTool();
+    }
+    // Defer out of the auth callback: awaiting Supabase calls inside it can deadlock.
+    sb.auth.onAuthStateChange((ev, session) => {
+      if (ev === "TOKEN_REFRESHED" || ev === "USER_UPDATED") return;
+      if (ev === "SIGNED_IN" && !$("dash").classList.contains("hidden")) return;
+      setTimeout(() => boot(session), 0);
+    });
+
+    // ---------- Tools ----------
+    async function loadTools() {
+      const { data, error } = await sb.from("hub_tools").select("*").order("sort_order").order("name");
+      if (error) return toast("تعذر تحميل الأدوات", true);
+      tools = data;
+      $("tool-list").innerHTML = tools.map((t) => `
+        <button class="tool-item ${current?.id === t.id ? "active" : ""}" data-id="${t.id}">
+          <span>${esc(t.icon)}</span><span>${esc(t.name)}</span>${t.published ? "" : `<span class="draft">مسودة</span>`}
+        </button>`).join("") || `<div class="empty" style="padding:16px">لا توجد أدوات</div>`;
+      $("cats").innerHTML = [...new Set(tools.map((t) => t.category))].map((c) => `<option value="${esc(c)}">`).join("");
+    }
+    $("tool-list").addEventListener("click", (e) => {
+      const b = e.target.closest(".tool-item"); if (b) selectTool(b.dataset.id);
+    });
+
+    function fillToolForm(t) {
+      const f = $("tool-form");
+      f.name.value = t?.name ?? ""; f.category.value = t?.category ?? "";
+      f.tagline.value = t?.tagline ?? ""; f.description.value = t?.description ?? "";
+      f.url.value = t?.url ?? ""; f.slug.value = t?.slug ?? "";
+      f.icon.value = t?.icon ?? "🧰"; f.sort_order.value = t?.sort_order ?? 0;
+      f.published.checked = t ? t.published : true;
+    }
+
+    async function selectTool(id) {
+      current = tools.find((t) => t.id === id);
+      fillToolForm(current);
+      $("tool-title").textContent = current.name;
+      $("delete-tool").classList.remove("hidden");
+      $("view-link").classList.remove("hidden");
+      $("view-link").href = `tool.html?t=${encodeURIComponent(current.slug)}`;
+      $("entries-panel").classList.remove("hidden");
+      document.querySelectorAll(".tool-item").forEach((b) => b.classList.toggle("active", b.dataset.id === id));
+      await loadEntries();
+    }
+
+    function newTool() {
+      current = null; fillToolForm(null);
+      $("tool-title").textContent = "أداة جديدة";
+      ["delete-tool", "view-link", "entries-panel"].forEach((i) => $(i).classList.add("hidden"));
+      document.querySelectorAll(".tool-item").forEach((b) => b.classList.remove("active"));
+      $("tool-form").name.focus();
+    }
+    $("new-tool").addEventListener("click", newTool);
+
+    $("tool-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const row = {
+        name: f.name.value.trim(), category: f.category.value.trim(), tagline: f.tagline.value.trim(),
+        description: f.description.value.trim(), url: f.url.value.trim(), slug: f.slug.value.trim().toLowerCase(),
+        icon: f.icon.value.trim() || "🧰", sort_order: Number(f.sort_order.value) || 0, published: f.published.checked,
+      };
+      const q = current ? sb.from("hub_tools").update(row).eq("id", current.id) : sb.from("hub_tools").insert(row);
+      const { data, error } = await q.select().single();
+      if (error) return toast(error.code === "23505" ? "معرّف الرابط مستخدم بالفعل" : "تعذر الحفظ", true);
+      toast("تم الحفظ");
+      await loadTools();
+      selectTool(data.id);
+    });
+
+    $("delete-tool").addEventListener("click", async () => {
+      if (!current || !confirm("حذف الأداة وكل محتواها نهائياً؟")) return;
+      const { error } = await sb.from("hub_tools").delete().eq("id", current.id);
+      if (error) return toast("تعذر الحذف", true);
+      toast("تم الحذف"); current = null;
+      await loadTools();
+      tools[0] ? selectTool(tools[0].id) : newTool();
+    });
+
+    // ---------- Entries ----------
+    async function loadEntries() {
+      const { data, error } = await sb.from("hub_entries").select("*").eq("tool_id", current.id)
+        .order("kind").order("sort_order").order("entry_date", { ascending: false });
+      if (error) return toast("تعذر تحميل المحتوى", true);
+      entries = data;
+      $("entry-list").innerHTML = entries.map((e) => `
+        <div class="entry-admin">
+          <div class="entry-head">
+            <div><span class="tag">${KINDS[e.kind].single}</span> <strong>${esc(e.title)}</strong></div>
+            <div class="actions">
+              <button class="btn btn-sm" data-edit="${e.id}">تعديل</button>
+              <button class="btn btn-sm btn-danger" data-del="${e.id}">حذف</button>
+            </div>
+          </div>
+          <small style="color:var(--muted)">${fmtDate(e.entry_date)}</small>
+        </div>`).join("") || `<div class="empty" style="padding:16px">لا يوجد محتوى بعد</div>`;
+    }
+
+    const dlg = $("entry-dialog"), ef = $("entry-form");
+    function openEntry(entry) {
+      editingEntry = entry || null;
+      $("entry-dialog-title").textContent = entry ? "تعديل المحتوى" : "محتوى جديد";
+      ef.kind.value = entry?.kind ?? "instruction";
+      ef.entry_date.value = entry?.entry_date ?? new Date().toISOString().slice(0, 10);
+      ef.title.value = entry?.title ?? ""; ef.body.value = entry?.body ?? "";
+      ef.sort_order.value = entry?.sort_order ?? 0;
+      dlg.showModal();
+    }
+    $("new-entry").addEventListener("click", () => openEntry());
+    $("entry-cancel").addEventListener("click", () => dlg.close());
+
+    $("entry-list").addEventListener("click", async (e) => {
+      const ed = e.target.closest("[data-edit]"), del = e.target.closest("[data-del]");
+      if (ed) openEntry(entries.find((x) => x.id === ed.dataset.edit));
+      if (del && confirm("حذف هذا المحتوى؟")) {
+        const { error } = await sb.from("hub_entries").delete().eq("id", del.dataset.del);
+        if (error) return toast("تعذر الحذف", true);
+        toast("تم الحذف"); loadEntries();
+      }
+    });
+
+    ef.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const row = {
+        tool_id: current.id, kind: ef.kind.value, entry_date: ef.entry_date.value,
+        title: ef.title.value.trim(), body: ef.body.value, sort_order: Number(ef.sort_order.value) || 0,
+      };
+      const q = editingEntry ? sb.from("hub_entries").update(row).eq("id", editingEntry.id) : sb.from("hub_entries").insert(row);
+      const { error } = await q;
+      if (error) return toast("تعذر الحفظ", true);
+      dlg.close(); toast("تم الحفظ"); loadEntries();
+    });
+  </script>
+</body>
+</html>

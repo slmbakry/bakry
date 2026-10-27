@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MBM | مركز المعرفة</title>
+  <meta name="description" content="مركز المعرفة: أدوات الأعمال مع التعليمات وملخصات التجارب">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%230f1b2d'/><text x='32' y='40' font-size='20' font-family='Arial' font-weight='bold' fill='%23b8924a' text-anchor='middle'>MBM</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="eyebrow">مركز المعرفة</span>
+      <h1>أدوات تشغيل أعمالك<br><span class="accent">في مكان واحد</span></h1>
+      <p>روابط الأدوات، وتعليمات استخدامها خطوة بخطوة، وملخصات التجارب العملية، عشان تشتغل بسرعة ومن غير أخطاء.</p>
+    </section>
+
+    <div class="toolbar">
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input id="q" type="search" placeholder="ابحث عن أداة..." autocomplete="off">
+      </label>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <section class="grid" id="grid">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    const { sb, esc, header, footer } = MBM;
+    header("home"); footer();
+
+    let tools = [], category = "الكل";
+    const grid = document.getElementById("grid");
+    const chips = document.getElementById("chips");
+    const q = document.getElementById("q");
+
+    function render() {
+      const term = q.value.trim().toLowerCase();
+      const list = tools.filter((t) =>
+        (category === "الكل" || t.category === category) &&
+        (!term || [t.name, t.tagline, t.description, t.category].join(" ").toLowerCase().includes(term)));
+      grid.innerHTML = list.length ? list.map((t) => `
+        <a class="card" href="tool.html?t=${encodeURIComponent(t.slug)}">
+          <div class="card-icon">${esc(t.icon)}</div>
+          <h3>${esc(t.name)}</h3>
+          <p>${esc(t.tagline)}</p>
+          <div class="meta"><span class="tag">${esc(t.category)}</span><span>${t.hub_entries?.[0]?.count ?? 0} موضوع</span></div>
+        </a>`).join("") : `<div class="empty">لا توجد أدوات مطابقة</div>`;
+    }
+
+    function renderChips() {
+      const cats = ["الكل", ...new Set(tools.map((t) => t.category))];
+      chips.innerHTML = cats.map((c) => `<button class="chip ${c === category ? "active" : ""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+    }
+    chips.addEventListener("click", (e) => {
+      const b = e.target.closest(".chip"); if (!b) return;
+      category = b.dataset.c; renderChips(); render();
+    });
+    q.addEventListener("input", render);
+
+    (async () => {
+      const { data, error } = await sb.from("hub_tools")
+        .select("slug,name,tagline,description,category,icon,sort_order,hub_entries(count)")
+        .eq("published", true).order("sort_order").order("name");
+      if (error) { grid.innerHTML = `<div class="empty">تعذر تحميل الأدوات، حاول مرة أخرى</div>`; return; }
+      tools = data; renderChips(); render();
+    })();
+  </script>
+</body>
+</html>

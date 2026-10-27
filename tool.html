@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MBM | أداة</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%230f1b2d'/><text x='32' y='40' font-size='20' font-family='Arial' font-weight='bold' fill='%23b8924a' text-anchor='middle'>MBM</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main class="wrap" id="main">
+    <a class="back" href="./">→ كل الأدوات</a>
+    <div class="skeleton" style="margin-top:24px"></div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    const { sb, KINDS, esc, format, fmtDate, safeUrl, header, footer } = MBM;
+    header(); footer();
+    const main = document.getElementById("main");
+    const slug = new URLSearchParams(location.search).get("t");
+
+    function notFound() {
+      main.innerHTML = `<a class="back" href="./">→ كل الأدوات</a><div class="empty">الأداة غير موجودة</div>`;
+    }
+
+    (async () => {
+      if (!slug) return notFound();
+      const { data: tool, error } = await sb.from("hub_tools")
+        .select("*, hub_entries(*)").eq("slug", slug).maybeSingle();
+      if (error || !tool) return notFound();
+
+      document.title = `MBM | ${tool.name}`;
+      const entries = (tool.hub_entries || []).sort((a, b) => a.sort_order - b.sort_order || b.entry_date.localeCompare(a.entry_date));
+      const kinds = Object.keys(KINDS).filter((k) => entries.some((e) => e.kind === k));
+      let active = kinds[0];
+      const url = safeUrl(tool.url);
+
+      main.innerHTML = `
+        <a class="back" href="./">→ كل الأدوات</a>
+        <section class="tool-head">
+          <div class="card-icon">${esc(tool.icon)}</div>
+          <div class="grow">
+            <span class="tag">${esc(tool.category)}</span>
+            <h1>${esc(tool.name)}</h1>
+            <p>${esc(tool.tagline)}</p>
+            ${tool.description ? `<div class="body" style="margin-top:12px;color:var(--ink-soft)">${format(tool.description)}</div>` : ""}
+            <div class="tool-actions">
+              ${url ? `<a class="btn btn-primary" href="${esc(url)}" target="_blank" rel="noopener">افتح الأداة ←</a>` : ""}
+            </div>
+          </div>
+        </section>
+        <nav class="tabs" id="tabs"></nav>
+        <section class="entries" id="entries"></section>`;
+
+      const tabs = document.getElementById("tabs");
+      const list = document.getElementById("entries");
+
+      function draw() {
+        tabs.innerHTML = kinds.map((k) => `<button class="tab ${k === active ? "active" : ""}" data-k="${k}">${KINDS[k].label}<span class="count">${entries.filter((e) => e.kind === k).length}</span></button>`).join("");
+        const items = entries.filter((e) => e.kind === active);
+        list.innerHTML = items.length ? items.map((e) => `
+          <article class="entry kind-${e.kind}">
+            <div class="entry-head"><h3>${esc(e.title)}</h3><time>${fmtDate(e.entry_date)}</time></div>
+            <div class="body">${format(e.body)}</div>
+          </article>`).join("") : `<div class="empty">لا يوجد محتوى بعد</div>`;
+      }
+      tabs.addEventListener("click", (e) => {
+        const b = e.target.closest(".tab"); if (!b) return;
+        active = b.dataset.k; draw();
+      });
+      draw();
+    })();
+  </script>
+</body>
+</html>
